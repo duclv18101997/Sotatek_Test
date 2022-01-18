@@ -23,9 +23,20 @@ export default {
 }
 .todo-wrapper {
   width: 1209px;
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
+  margin: 32px 0px;
   border: 1px solid #000000;
   display: grid;
   grid-template-columns: 1.5fr 2fr;
+  @media (max-width: 1024px) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 32px;
+  }
+  @media (max-width: 767px) {
+    margin: 16px;
+    min-height: calc(100vh - 32px);
+  }
 }
 </style>

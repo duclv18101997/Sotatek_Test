@@ -1,131 +1,129 @@
 <template>
   <div class="add-todo">
     <div class="add-todo__header">New Task</div>
-    <div class="add-form">
-      <div class="add-form__title">
-        <Input placeholder="Add new task..." />
+    <div v-if="!isDesktop" class="add-todo__mobile">
+      <div class="add-button">
+        <span>Click to add task: </span>
+        <button @click="isShowAddFormMobile = !isShowAddFormMobile">
+          Add +
+        </button>
       </div>
-      <div class="add-form__description">
-        <p class="input-label">Description</p>
-        <textarea />
-      </div>
-      <div class="add-form__addition-info">
-        <div class="date-input">
-          <p class="input-label">Due Date</p>
-          <div class="d-flex">
-            <DatePicker class="date-picker" />
-            <img src="../assets/calendar.svg" />
-          </div>
-        </div>
-        <div class="piority">
-          <p class="input-label">Piority</p>
-          <Dropdown :options="piorityOption"/>
-        </div>
-      </div>
+      <transition name="component-fade" mode="out-in">
+        <FormAddTodo
+          v-if="isShowAddFormMobile"
+          :dataProps="formData"
+          type="Add"
+          @getFormData="getFormData"
+        />
+      </transition>
     </div>
-    <div class="button-action">
-      <button class="button-action__add">Add</button>
-    </div>
+    <FormAddTodo
+      v-if="isDesktop"
+      :dataProps="formData"
+      type="Add"
+      @getFormData="getFormData"
+    />
   </div>
 </template>
 <script>
-import DatePicker from 'vuejs-datepicker'
-import Input from './Input.vue'
-import Dropdown from './Dropdown.vue'
+import { mapGetters, mapMutations } from 'vuex'
+import FormAddTodo from "./FormAddTodo.vue"
+import mixin from '../mixins/mixin'
 export default {
+  mixins: [mixin],
   components: {
-    DatePicker,
-    Input,
-    Dropdown
+    FormAddTodo
   },
   data() {
     return {
-      piorityOption: [
-        {
-          lable: 'High',
-          id: 1
-        },
-        {
-          lable: 'Normal',
-          id: 2
-        },
-        {
-          lable: 'Low',
-          id: 3
-        }
-      ]
+      formData: {
+        title: "",
+        description: "",
+        dueDate: new Date(),
+        priority: "Normal",
+        key: new Date().getTime(),
+      },
+      isShowAddFormMobile: false
+    };
+  },
+  computed: {
+    ...mapGetters('todoList', {
+      todoList: 'getTodoList',
+    }),
+  },
+  methods: {
+    ...mapMutations('todoList', ['ADD_TODO_LIST']),
+    getFormData(data) {
+      let currentListTodo = JSON.parse(JSON.stringify(this.todoList))
+      currentListTodo.push(data);
+      // add data to localStorage
+      this.ADD_TODO_LIST(currentListTodo)
+      if (!this.isDesktop) {
+        this.isShowAddFormMobile = false
+      }
     }
-  }
-}
+  },
+};
 </script>
 <style lang="scss" scoped>
+.component-fade-enter-active,
+.component-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.component-fade-enter, .component-fade-leave-to
+/* .component-fade-leave-active ở các phiên bản trước 2.1.8 */ {
+  opacity: 0;
+}
 .add-todo {
   height: 100%;
   border-right: 1px solid #000000;
+  outline: none;
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid #000000;
+  }
+  @media (max-width: 1024px) {
+    height: auto;
+  }
   &__header {
     font-weight: bold;
     text-align: center;
     color: #000000;
     margin-bottom: 42px;
     padding: 32px 32px 0px;
+    @media (max-width: 1024px) {
+      padding: 16px 16px 0;
+      margin-bottom: 16px;
+    }
   }
-  .add-form {
-    padding: 0 32px;
-    .input-label {
-      font-size: 12px;
-      font-weight: bold;
-      color: #000000;
+  &__mobile {
+    padding: 0 16px;
+    .add-button {
       text-align: left;
-      margin-bottom: 8px;
-    }
-    &__title {
-      margin-bottom: 24px;
-    }
-    &__description {
-      margin-bottom: 24px;
-      textarea {
-        width: 100%;
-        height: 125px;
-        max-height: 125px;
-        border: 1px solid #000000;
-        outline: none;
-        padding: 10px;
+      margin-bottom: 16px;
+      button {
+        padding: 4px 16px;
+        color: #ffffff;
+        -family: Arimo;
+        -size: 15px;
+        text-align: center;
+        background: #5cb85c;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
       }
-    }
-    &__addition-info {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 32px;
-      .date-input, .piority {
-        width: 100%;
-      }
-      .date-picker {
-        /deep/ input {
-          height: 32px !important;
-        width: 100%;
-        }
-      }
-    }
-  }
-  .button-action {
-    padding: 0 32px;
-    &__add {
-      width: 100%;
-      height: 32px;
-      color: #FFFFFF;
-      font-family: Arimo;
-      font-size: 15px;
-      text-align: center;
-      background: #5CB85C;
-      border: none;
-      border-radius: 10px;
     }
   }
 }
-.d-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+::-webkit-scrollbar {
+  width: 9px;
+  background: #ffffff;
+  border-radius: 1px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 10px;
+  border-left: 2px solid #ffffff;
+  border-right: 1px solid #ffffff;
 }
 </style>
